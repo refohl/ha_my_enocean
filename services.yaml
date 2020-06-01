@@ -1,0 +1,34 @@
+# Describes the format for available switch services
+
+service_teach_in:
+  description: "EnOcean teach-in: Please put the device in learn mode before calling this service."
+  fields:
+    dev_id:
+      description: EnOcean ID of device to teach in
+      example: "'[0xFF,0xFF,0xFF,0xFF]'"
+
+service_add_switch:
+  description: "Add EnOcean switch."
+  fields:
+    dev_id:
+      description: EnOcean ID of device
+      example: "'[0xFF,0xFF,0xFF,0xFF]'"
+    #dev_name:
+    #  description: Name of device
+    #  example: "EnOcean Switch"
+    dev_manufacturer:
+      description: Manufacturer of device
+      example: "NodOn"
+    dev_model:
+      description: Model descriptor
+      example: "SIN-2-1-01"
+    dev_no_of_channels:
+      description: "Number of channels supported by device"
+      example: 1
+
+service_remove_device:
+  description: "Remove EnOcean device."
+  fields:
+    dev_id:
+      description: EnOcean ID of device to be removed
+      example: "'[0xFF,0xFF,0xFF,0xFF]'"

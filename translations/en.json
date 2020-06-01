@@ -1,0 +1,45 @@
+{
+  "config": {
+    "title": "EnOcean",
+    "step": {
+      "user": {
+        "title": "Set up EnOcean",
+        "description": "Configure EnOcean Transceiver",
+        "data": {
+          "manufacturer": "Manufacturer",
+          "model": "Model",
+          "serial_port": "Serial port"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Failed to connect, please try again",
+      "invalid_auth": "Invalid authentication",
+      "unknown": "Unexpected error"
+    },
+    "abort": {
+      "already_configured": "EnOcean integration is already configured"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "data": {
+          "option": "Select action"
+        }
+      },
+      "config_switch": {
+        "title": "Set up EnOcean",
+        "description": "Enter parameters of the EnOcean switch",
+        "data": {
+          "name": "Name",
+          "manufacturer": "Manufacturer",
+          "model": "Model",
+          "id": "EnOcean ID",
+          "no_of_channels": "Number of channels",
+          "channel": "Channel"
+        }
+      }
+    }
+  }
+}

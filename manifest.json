@@ -1,0 +1,16 @@
+{
+  "domain": "my_enocean",
+  "name": "EnOcean",
+  "config_flow": true,
+  "documentation": "",
+  "requirements": [
+    "enocean==0.50.1"
+  ],
+  "ssdp": [],
+  "zeroconf": [],
+  "homekit": {},
+  "dependencies": [],
+  "codeowners": [
+    "@refohl"
+  ]
+}
