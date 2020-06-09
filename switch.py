@@ -4,7 +4,7 @@ import asyncio
 
 import voluptuous as vol
 
-from homeassistant.components.switch import PLATFORM_SCHEMA, SwitchDevice
+from homeassistant.components.switch import PLATFORM_SCHEMA, SwitchEntity
 from homeassistant.core import callback
 from homeassistant.const import (
     CONF_ID,
@@ -35,6 +35,7 @@ from .const import (
 from .const import (
     SIGNAL_ADD_ENTITIES,
 )
+from .const import DEVICES_EEP
 
 from enocean.protocol.constants import PACKET
 from enocean.utils import combine_hex
@@ -93,7 +94,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
     hass.data[DOMAIN][DATA_DISPATCHERS].append(unsubscribe_dispatcher)
 
 
-class EnOceanSwitch(EnOceanDevice, SwitchDevice):
+class EnOceanSwitch(EnOceanDevice, SwitchEntity):
     """Representation of an EnOcean switch device."""
 
     def __init__(
@@ -147,8 +148,10 @@ class EnOceanSwitch(EnOceanDevice, SwitchDevice):
 
     async def async_turn_on(self, **kwargs):
         """Turn the switch on."""
-        if ("NodOn" in self.dev_manufacturer) and ("SIN" in self.dev_model):
-            # D2-01, CMD 0x1
+        dict_key = f"{self.dev_manufacturer}_{self.dev_model}"
+        
+        if "D2-01-00" in DEVICES_EEP[dict_key]:
+            # D2-01-00, CMD 0x1
             # [Command ID] 
             cmd_id = 0x01
             # [Dim value] 0x00: Switch to new value
@@ -171,7 +174,7 @@ class EnOceanSwitch(EnOceanDevice, SwitchDevice):
             # Status
             data.extend([0x00])
 
-        elif ("Eltako" in self.dev_manufacturer) and ("FSR61" in self.dev_model):
+        elif "A5-38-08" in DEVICES_EEP[dict_key]:
             # A5-38-08, CMD 0x1
             # [Command ID] 
             cmd_id = 0x01
@@ -198,6 +201,7 @@ class EnOceanSwitch(EnOceanDevice, SwitchDevice):
             data.extend(self.hass.data[DOMAIN][DATA_BASE][CONF_ID])
             # Status
             data.extend([0x00])
+
         else:
             data = []
 
@@ -223,8 +227,10 @@ class EnOceanSwitch(EnOceanDevice, SwitchDevice):
 
     async def async_turn_off(self, **kwargs):
         """Turn the switch off."""
-        if ("NodOn" in self.dev_manufacturer) and ("SIN" in self.dev_model):
-            # D2-01, CMD 0x1
+        dict_key = f"{self.dev_manufacturer}_{self.dev_model}"
+        
+        if "D2-01-00" in DEVICES_EEP[dict_key]:
+            # D2-01-00, CMD 0x1
             # [Command ID] 
             cmd_id = 0x01
             # [Dim value] 0x00: Switch to new value
@@ -247,7 +253,7 @@ class EnOceanSwitch(EnOceanDevice, SwitchDevice):
             # Status
             data.extend([0x00])
 
-        elif ("Eltako" in self.dev_manufacturer) and ("FSR61" in self.dev_model):
+        elif "A5-38-08" in DEVICES_EEP[dict_key]:
             # A5-38-08, CMD 0x1
             # [Command ID] 
             cmd_id = 0x01
@@ -274,6 +280,7 @@ class EnOceanSwitch(EnOceanDevice, SwitchDevice):
             data.extend(self.hass.data[DOMAIN][DATA_BASE][CONF_ID])
             # Status
             data.extend([0x00])
+
         else:
             data = []
 
@@ -321,8 +328,10 @@ class EnOceanSwitch(EnOceanDevice, SwitchDevice):
                     self.schedule_update_ha_state()
 
     def request_status(self):
-        if ("NodOn" in self.dev_manufacturer) and ("SIN" in self.dev_model):
-            # D2-01, CMD 0x1
+        dict_key = f"{self.dev_manufacturer}_{self.dev_model}"
+        
+        if "D2-01-00" in DEVICES_EEP[dict_key]:
+            # D2-01, CMD 0x3
             # [Command ID] 
             cmd_id = 0x03
             # [I/O channel]
@@ -355,10 +364,14 @@ class EnOceanSwitch(EnOceanDevice, SwitchDevice):
                 data=data,
                 optional=optional,
             )
-        elif ("Eltako" in self.dev_manufacturer) and ("FSR61" in self.dev_model):
+
+        elif "A5-38-08" in DEVICES_EEP[dict_key]:
             # Eltako devices do not support status requests
             # -> switch of upon startup to synchronize
             self.hass.async_create_task(
                 self.async_turn_off()
             )
+
+        else:
+            pass
 

@@ -21,6 +21,7 @@ from .const import (
     SIGNAL_SEND_PACKET,
     SIGNAL_TEACH_IN,
 )
+from .const import DEVICES_EEP
 
 from enocean.communicators.serialcommunicator import SerialCommunicator
 from enocean.protocol.constants import RETURN_CODE
@@ -168,11 +169,13 @@ class EnOceanDevice(Entity):
 
     def teach_in(self):
         """Send teach in command."""
-        if ("NodOn" in self.dev_manufacturer) and ("SIN" in self.dev_model):
+        dict_key = f"{self.dev_manufacturer}_{self.dev_model}"
+
+        if "TeachIn_UTE" in DEVICES_EEP[dict_key]:
             # Supports UTE, handled in packet_receiver()
             pass
 
-        elif ("Eltako" in self.dev_manufacturer) and ("FSR61" in self.dev_model):
+        elif "TeachIn_4BS" in DEVICES_EEP[dict_key]:
             # 4BS Teach-in
             
             # Packet: data
@@ -270,15 +273,4 @@ class EnOceanDongle(EnOceanDevice):
             # Emit signal for each radio packet to notify the addressed device.
             _LOGGER.debug(f"[EnOceanDongle.communicator_callback()] RadioPacket received: {packet}")
             self.hass.helpers.dispatcher.dispatcher_send(SIGNAL_RECEIVE_PACKET, packet)
-    
-    async def async_update_device_registry(self) -> None:
-        """Add a device for this hub to the device registry."""
-        dreg = await device_registry.async_get_registry(self.hass)
-        dreg.async_get_or_create(
-            config_entry_id=self.config_entry.entry_id,
-            connections={(device_registry.CONNECTION_NETWORK_MAC, self._hub.mac)},
-            identifiers={(DOMAIN, self._hub.mac)},
-            manufacturer="Hubitat",
-            name="Hubitat Elevation",
-        )
 

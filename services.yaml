@@ -18,10 +18,10 @@ service_add_switch:
     #  example: "EnOcean Switch"
     dev_manufacturer:
       description: Manufacturer of device
-      example: "NodOn"
+      example: "'NodOn'"
     dev_model:
       description: Model descriptor
-      example: "SIN-2-1-01"
+      example: "'SIN-2-1-01'"
     dev_no_of_channels:
       description: "Number of channels supported by device"
       example: 1
