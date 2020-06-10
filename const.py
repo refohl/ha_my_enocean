@@ -56,6 +56,6 @@ SIGNAL_ADD_ENTITIES = "enocean.add_entities"
 DEVICES_EEP = {
     "NodOn_SIN-2-1-01": ["TeachIn_UTE", "D2-01-00"],
     "NodOn_SIN-2-2-01": ["TeachIn_UTE", "D2-01-00"],
-    "Eltako_FSR61NP": ["TeachIn_4BS", "A5-38-08"],
-    "FLEXtron_300610": ["TeachIn_4BS", "A5-38-08"],
+    "Eltako_FSR61NP": ["TeachIn_4BS", "F6-02-01", "A5-38-08"],
+    "FLEXtron_300610": ["TeachIn_4BS", "A5-11-04", "A5-38-08"],
     }

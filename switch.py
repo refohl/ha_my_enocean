@@ -307,8 +307,9 @@ class EnOceanSwitch(EnOceanDevice, SwitchEntity):
     def packet_receiver(self, packet):
         """Update internal device state when receiving a status response."""
         super().packet_receiver(packet)
+        dict_key = f"{self.dev_manufacturer}_{self.dev_model}"
         if packet.data[0]==0xD2:
-            if ("NodOn" in self.dev_manufacturer) and ("SIN" in self.dev_model):
+            if "D2-01-00" in DEVICES_EEP[dict_key]:
                 packet.parse_eep(rorg_func=0x01, rorg_type=0x01)
                 if packet.parsed["CMD"]["raw_value"]==0x04:
                     _LOGGER.debug(f"[EnOceanSwitch.packet_receiver()] Status: {packet}")
@@ -318,12 +319,21 @@ class EnOceanSwitch(EnOceanDevice, SwitchEntity):
                         self._is_on = (output > 0)
                         self.schedule_update_ha_state()
         elif packet.data[0]==0xF6:
-            if ("Eltako" in self.dev_manufacturer) and ("FSR61" in self.dev_model):
+            if "F6-02-01" in DEVICES_EEP[dict_key]:
                 _LOGGER.debug(f"[EnOceanSwitch.packet_receiver()] Status: {packet}")
                 if packet.data[1]==0x50:
                     self._is_on = False
                     self.schedule_update_ha_state()
                 if packet.data[1]==0x70:
+                    self._is_on = True
+                    self.schedule_update_ha_state()
+        elif packet.data[0]==0xA5:
+            if "A5-11-04" in DEVICES_EEP[dict_key]:
+                _LOGGER.debug(f"[EnOceanSwitch.packet_receiver()] Status: {packet}")
+                if packet.data[1]==0x00:
+                    self._is_on = False
+                    self.schedule_update_ha_state()
+                if packet.data[1]==0xFF:
                     self._is_on = True
                     self.schedule_update_ha_state()
 
