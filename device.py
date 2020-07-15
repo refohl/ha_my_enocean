@@ -173,7 +173,7 @@ class EnOceanDevice(Entity):
 
         if "TeachIn_UTE" in DEVICES_EEP[dict_key]:
             # Supports UTE, handled in packet_receiver()
-            pass
+            _LOGGER.debug(f"[EnOceanDevice.teach_in]: TeachIn_UTE already handled in packet_receiver()")
 
         elif "TeachIn_4BS" in DEVICES_EEP[dict_key]:
             # 4BS Teach-in
@@ -193,27 +193,28 @@ class EnOceanDevice(Entity):
             # Status
             data.extend([0x00])
 
-        else:
-            data = []
-        
-        # Packet: optional data (Packet Type 1: RADIO_ERP1)
-        # [SubTelNum] Number of subtelegram; Send: 3 / receive: 0
-        optional = [0x03]
-        # [Destination ID] Broadcast transmission: FF FF FF FF
-        optional.extend(self.dev_id)
-        # [dBm] Send case: FF
-        optional.extend([0xFF])
-        # [Security Level] Send Case: Will be ignored
-        optional.extend([0x00])
-        
-        # send command
-        self.send_command(
-            packet_type=0x01,
-            data=data,
-            optional=optional,
-        )
+            # Packet: optional data (Packet Type 1: RADIO_ERP1)
+            # [SubTelNum] Number of subtelegram; Send: 3 / receive: 0
+            optional = [0x03]
+            # [Destination ID] Broadcast transmission: FF FF FF FF
+            optional.extend(self.dev_id)
+            # [dBm] Send case: FF
+            optional.extend([0xFF])
+            # [Security Level] Send Case: Will be ignored
+            optional.extend([0x00])
+            
+            # send command
+            self.send_command(
+                packet_type=0x01,
+                data=data,
+                optional=optional,
+            )
 
-        _LOGGER.debug(f"[EnOceanDevice.teach_in]: Sent to {self.dev_id}")
+            _LOGGER.debug(f"[EnOceanDevice.teach_in]: Sent to {self.dev_id}")
+
+        else:
+            pass
+        
 
     def send_command(self, packet_type, data, optional):
         """Send a command via the EnOcean dongle."""
