@@ -250,13 +250,13 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry):
     def handle_service_remove_device(call):
         dev_id = call.data.get("dev_id")
         dev_id = [int(x,0) for x in dev_id[1:-1].split(",")]
-
+        # remove device from registry
         dreg = asyncio.run_coroutine_threadsafe( hass.helpers.device_registry.async_get_registry() , hass.loop).result()
         dreg_dev = dreg.async_get_device({(DOMAIN, combine_hex(dev_id))}, set())
         dreg.async_remove_device(device_id=dreg_dev.id)
-        
-        hass.data[DOMAIN][DATA_DEVICES].pop(combine_hex(dev[CONF_ID]))
-        
+        # remove device from domain specific data
+        hass.data[DOMAIN][DATA_DEVICES].pop(combine_hex(dev_id))
+        # remove device from database file
         database_remove_device(db_file, dev_id)
         
     hass.services.async_register(
