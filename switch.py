@@ -1,7 +1,8 @@
 """Support for EnOcean switches."""
 import logging
 import asyncio
-import numpy as np
+#import numpy as np
+import random
 
 import voluptuous as vol
 
@@ -76,7 +77,8 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
                     dev_no_of_channels = dev[ATTR_DEVICE_CLASS][CONF_SWITCHES][CONF_NO_OF_CHANNELS]
                     _LOGGER.debug(f"Class '{CONF_SWITCHES}' found for device id {dev_id}!")
 
-                    rand_nb = np.random.rand()*3
+                    #rand_nb = np.random.rand()*3
+                    rand_nb = random.random()*3
                     await asyncio.sleep(rand_nb)
                     async_add_entities([
                         EnOceanSwitch(
