@@ -5,6 +5,7 @@ import random
 
 import voluptuous as vol
 
+from homeassistant import helpers
 from homeassistant.components.switch import PLATFORM_SCHEMA, SwitchEntity
 from homeassistant.core import callback
 from homeassistant.const import (
@@ -64,8 +65,6 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
     """Set up EnOcean Switch from Config Entry."""
 
     async def async_add_switches():
-        dreg = await hass.helpers.device_registry.async_get_registry()
-
         devices = hass.data[DOMAIN][DATA_DEVICES]
         _LOGGER.debug(f"[async_add_switches()] devices: {devices}")
         for dev in devices.values():

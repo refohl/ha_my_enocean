@@ -5,7 +5,7 @@ import os
 
 import voluptuous as vol
 
-from homeassistant import config_entries, core, exceptions
+from homeassistant import config_entries, core, exceptions, helpers
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.const import (
@@ -141,7 +141,8 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry):
     hass.data[DOMAIN][DATA_DONGLE] = dongle
     _LOGGER.debug(f"[async_setup_entry()] dongle.dev_id: {dongle.dev_id}")
 
-    dreg = await hass.helpers.device_registry.async_get_registry()
+    #dreg = await hass.helpers.device_registry.async_get_registry()     # async_get_registry() deprecated -> replaced with line below
+    dreg = helpers.device_registry.async_get(hass)
     dreg.async_get_or_create(
         config_entry_id=config_entry.entry_id,
         name=f"{ENOCEAN_TRANSCEIVER}, ID [{', '.join([hex(x) for x in dongle.dev_id])}]",
@@ -229,7 +230,7 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry):
             }
         }
         _LOGGER.debug(f"[handle_service_add_switch()] dev_data: {dev_data}")
-        hass.data[DOMAIN][DATA_DEVICES][combine_hex(dev[CONF_ID])] = dev_data
+        hass.data[DOMAIN][DATA_DEVICES][combine_hex(dev_data[CONF_ID])] = dev_data
         hass.helpers.dispatcher.async_dispatcher_send(SIGNAL_ADD_ENTITIES)
         database_add_device(db_file, dev_data)
         
@@ -251,7 +252,8 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry):
         dev_id = call.data.get("dev_id")
         dev_id = [int(x,0) for x in dev_id[1:-1].split(",")]
         # remove device from registry
-        dreg = asyncio.run_coroutine_threadsafe( hass.helpers.device_registry.async_get_registry() , hass.loop).result()
+        #dreg = asyncio.run_coroutine_threadsafe( hass.helpers.device_registry.async_get_registry() , hass.loop).result()       # async_get_registry() deprecated -> replaced with line below
+        dreg = helpers.device_registry.async_get(hass)
         dreg_dev = dreg.async_get_device({(DOMAIN, combine_hex(dev_id))}, set())
         dreg.async_remove_device(device_id=dreg_dev.id)
         # remove device from domain specific data
@@ -300,7 +302,8 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry):
     )
     if unload_ok:
         """Remove devices from device registry."""
-        dreg = await hass.helpers.device_registry.async_get_registry()
+        #dreg = await hass.helpers.device_registry.async_get_registry()     # async_get_registry() deprecated -> replaced with line below
+        dreg = helpers.device_registry.async_get(hass)
         for dev_id in hass.data[DOMAIN][DATA_DEVICES].keys():
             dreg_dev = dreg.async_get_device({(DOMAIN, dev_id)}, set())
             dreg.async_remove_device(device_id=dreg_dev.id)
