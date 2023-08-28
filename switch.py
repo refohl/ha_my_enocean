@@ -126,7 +126,7 @@ class EnOceanSwitch(EnOceanDevice, SwitchEntity):
     def device_info(self):
         _LOGGER.debug("super().device_info: %s", super().device_info)
         self.dev_info = super().device_info
-        self.dev_info["channel"] = self.dev_channel
+        #self.dev_info["channel"] = self.dev_channel
         return self.dev_info
 
     @property
