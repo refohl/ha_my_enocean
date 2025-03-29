@@ -1,11 +1,11 @@
 {
   "domain": "my_enocean",
   "name": "EnOcean",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "config_flow": true,
   "documentation": "",
   "requirements": [
-    "enocean==0.50.1"
+    "enocean==0.60.1"
   ],
   "ssdp": [],
   "zeroconf": [],

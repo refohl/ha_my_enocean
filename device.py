@@ -6,6 +6,7 @@ import os
 import voluptuous as vol
 
 from homeassistant.helpers.entity import Entity
+from homeassistant.helpers.dispatcher import async_dispatcher_connect, dispatcher_send
 from homeassistant.const import (
     CONF_ID,
     CONF_NAME,
@@ -73,13 +74,13 @@ class EnOceanDevice(Entity):
     
     async def async_added_to_hass(self):
         """Register callbacks."""
-        unsubscribe_dispatcher = self.hass.helpers.dispatcher.async_dispatcher_connect(
-            SIGNAL_RECEIVE_PACKET, self._packet_received_callback
+        unsubscribe_dispatcher = async_dispatcher_connect(
+            self.hass, SIGNAL_RECEIVE_PACKET, self._packet_received_callback
         )
         self.hass.data[DOMAIN][DATA_DISPATCHERS].append(unsubscribe_dispatcher)
         
-        unsubscribe_dispatcher = self.hass.helpers.dispatcher.async_dispatcher_connect(
-            SIGNAL_TEACH_IN, self._teach_in_callback
+        unsubscribe_dispatcher = async_dispatcher_connect(
+            self.hass, SIGNAL_TEACH_IN, self._teach_in_callback
         )
         self.hass.data[DOMAIN][DATA_DISPATCHERS].append(unsubscribe_dispatcher)
 
@@ -219,7 +220,7 @@ class EnOceanDevice(Entity):
     def send_command(self, packet_type, data, optional):
         """Send a command via the EnOcean dongle."""
         packet = Packet(packet_type, data=data, optional=optional)
-        self.hass.helpers.dispatcher.dispatcher_send(SIGNAL_SEND_PACKET, packet)
+        dispatcher_send(self.hass, SIGNAL_SEND_PACKET, packet)
 
 
 class EnOceanDongle(EnOceanDevice):
@@ -243,8 +244,8 @@ class EnOceanDongle(EnOceanDevice):
         self.dev_id = self.communicator.base_id
         _LOGGER.debug(f"[EnOceanDongle] self.dev_id: {self.dev_id}")
 
-        unsubscribe_dispatcher = self.hass.helpers.dispatcher.async_dispatcher_connect(
-            SIGNAL_SEND_PACKET, self.send_packet
+        unsubscribe_dispatcher = async_dispatcher_connect(
+            self.hass, SIGNAL_SEND_PACKET, self.send_packet
         )
         self.hass.data[DOMAIN][DATA_DISPATCHERS].append(unsubscribe_dispatcher)
     
@@ -273,5 +274,5 @@ class EnOceanDongle(EnOceanDevice):
         if isinstance(packet, RadioPacket):
             # Emit signal for each radio packet to notify the addressed device.
             _LOGGER.debug(f"[EnOceanDongle.communicator_callback()] RadioPacket received: {packet}")
-            self.hass.helpers.dispatcher.dispatcher_send(SIGNAL_RECEIVE_PACKET, packet)
+            dispatcher_send(self.hass, SIGNAL_RECEIVE_PACKET, packet)
 

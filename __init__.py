@@ -15,6 +15,7 @@ from homeassistant.const import (
     CONF_NAME,
     ATTR_DEVICE_CLASS,
 )
+from homeassistant.helpers.dispatcher import async_dispatcher_send, dispatcher_send
 
 from .const import DOMAIN
 from .const import (
@@ -185,16 +186,18 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry):
         hass.data[DOMAIN][DATA_DEVICES][combine_hex(dev[CONF_ID])] = dev
     _LOGGER.debug(f"[async_setup_entry()] dev_all: {hass.data[DOMAIN][DATA_DEVICES]}")
 
-    to_setup = []
-    for component in PLATFORMS:
-        task = hass.async_create_task(
-            hass.config_entries.async_forward_entry_setup(config_entry, component)
-        )
-        to_setup.append(task)
-    hass.data[DOMAIN][DATA_PLATFORM] = to_setup
-    _LOGGER.debug(f"[async_setup_entry()] to_setup: {to_setup}")
-
-    asyncio.create_task(async_load_entities(hass))
+    # "async_forward_entry_setup" is depricated (and removed in 2025.6) and replaced by "async_forward_entry_setups"
+    #to_setup = []
+    #for component in PLATFORMS:
+    #    task = hass.async_create_task(
+    #        hass.config_entries.async_forward_entry_setup(config_entry, component)
+    #    )
+    #    to_setup.append(task)
+    #hass.data[DOMAIN][DATA_PLATFORM] = to_setup
+    #_LOGGER.debug(f"[async_setup_entry()] to_setup: {to_setup}")
+    #asyncio.create_task(async_load_entities(hass))
+    await hass.config_entries.async_forward_entry_setups(config_entry, PLATFORMS)
+    async_dispatcher_send(hass, SIGNAL_ADD_ENTITIES)
     
     #config_entry.add_update_listener(update_listener)
 
@@ -202,7 +205,7 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry):
         dev_id = call.data.get("dev_id")
         dev_id = [int(x,0) for x in dev_id[1:-1].split(",")]
         _LOGGER.debug(f"[handle_service_teach_in]: {dev_id}")
-        hass.helpers.dispatcher.dispatcher_send(SIGNAL_TEACH_IN, dev_id)
+        dispatcher_send(hass, SIGNAL_TEACH_IN, dev_id)
         
     hass.services.async_register(
         domain=DOMAIN,
@@ -231,7 +234,7 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry):
         }
         _LOGGER.debug(f"[handle_service_add_switch()] dev_data: {dev_data}")
         hass.data[DOMAIN][DATA_DEVICES][combine_hex(dev_data[CONF_ID])] = dev_data
-        hass.helpers.dispatcher.async_dispatcher_send(SIGNAL_ADD_ENTITIES)
+        dispatcher_send(hass, SIGNAL_ADD_ENTITIES)
         database_add_device(db_file, dev_data)
         
     hass.services.async_register(
@@ -255,7 +258,8 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry):
         #dreg = asyncio.run_coroutine_threadsafe( hass.helpers.device_registry.async_get_registry() , hass.loop).result()       # async_get_registry() deprecated -> replaced with line below
         dreg = helpers.device_registry.async_get(hass)
         dreg_dev = dreg.async_get_device({(DOMAIN, combine_hex(dev_id))}, set())
-        dreg.async_remove_device(device_id=dreg_dev.id)
+        #dreg.async_remove_device(device_id=dreg_dev.id)    # depricated, call from event loop (thread safe)
+        hass.add_job(dreg.async_remove_device, dreg_dev.id)
         # remove device from domain specific data
         hass.data[DOMAIN][DATA_DEVICES].pop(combine_hex(dev_id))
         # remove device from database file
@@ -275,15 +279,16 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry):
     return True
 
 
-async def async_load_entities(hass: HomeAssistant) -> None:
-    """Load entities after integration was setup."""
-    to_setup = hass.data[DOMAIN][DATA_PLATFORM]
-    results = await asyncio.gather(*to_setup, return_exceptions=True)
-    _LOGGER.debug(f"create_task, results: {results}")
-    for res in results:
-        if isinstance(res, Exception):
-            _LOGGER.warning("Couldn't setup EnOcean platform: %s", res)
-    hass.helpers.dispatcher.async_dispatcher_send(SIGNAL_ADD_ENTITIES)
+# "async_forward_entry_setup" is depricated (and removed in 2025.6) and replaced by "async_forward_entry_setups"
+#async def async_load_entities(hass: HomeAssistant) -> None:
+#    """Load entities after integration was setup."""
+#    to_setup = hass.data[DOMAIN][DATA_PLATFORM]
+#    results = await asyncio.gather(*to_setup, return_exceptions=True)
+#    _LOGGER.debug(f"create_task, results: {results}")
+#    for res in results:
+#        if isinstance(res, Exception):
+#            _LOGGER.warning("Couldn't setup EnOcean platform: %s", res)
+#    async_dispatcher_send(hass, SIGNAL_ADD_ENTITIES)
 
 
 #async def update_listener(hass, config_entry):

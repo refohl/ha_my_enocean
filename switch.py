@@ -94,7 +94,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
                     hass.data[DOMAIN][DATA_DEVICES][combine_hex(dev_id)][CONF_LOADED] = True
 
     # Connect to signal to add devices
-    unsubscribe_dispatcher = hass.helpers.dispatcher.async_dispatcher_connect(SIGNAL_ADD_ENTITIES, async_add_switches)
+    unsubscribe_dispatcher = async_dispatcher_connect(hass, SIGNAL_ADD_ENTITIES, async_add_switches)
     hass.data[DOMAIN][DATA_DISPATCHERS].append(unsubscribe_dispatcher)
 
 
